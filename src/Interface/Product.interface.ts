@@ -9,6 +9,7 @@ export interface IProducts {
 }
 
 export enum IProductCategory {
+    All = "all",
     Electronics = "electronics",
     Jewelery = "jewelery",
     MenSClothing = "men's clothing",

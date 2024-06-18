@@ -16,13 +16,25 @@ import Menu from '@mui/material/Menu';
 import CardProduct from './component/card/product';
 import ProductService from './Service/ProductService';
 import { IProductCategory, IProducts } from './Interface/Product.interface';
-import { log } from 'console';
+import { CircularProgress, Box, Button, TextField, InputAdornment } from '@mui/material';
+import { Logout } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useSearchParams } from 'react-router-dom';
+
+
 
 function App() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [allProducts, setAllProducts] = useState<IProducts[]>([]);
+  const [allGlobalProducts, setAllGlobalProducts] = useState<IProducts[]>([]);
   const [allCategorys, setAllCategorys] = useState<string[]>([]);
   const [menuCate, setMenuCate] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [categoryParams, setCategoryParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
+  const categoryQuery = searchParams.get('category') || '';
 
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,23 +46,115 @@ function App() {
   };
 
   useEffect(() => {
+    setLoading(true);
     const getProducts = async () => {
       let products = await new ProductService().getProductList();
-      console.log('From app com', products);
-      setAllProducts(products)
+      // console.log('From app com', products);
+      setAllProducts(products);
+      setAllGlobalProducts(products);
+
     }
     getProducts()
 
     const getCategorys = async () => {
       let categorys = await new ProductService().getProductCat();
-      console.log('Product Category', categorys);
-      setAllCategorys(categorys)
+      // console.log('Product Category', categorys);
+      const updatedCategories = ["all", ...categorys];
+      setAllCategorys(updatedCategories);
+      setLoading(false);
     }
     getCategorys()
+
+
   }, []);
 
-  const handleMenu = (val:any) => {
-    setMenuCate(val)
+  const handleMenu = (val: any) => {
+    const category = val.toLowerCase();
+
+    setParams(category, 'category');
+    setMenuCate(category);
+    console.log(category);
+
+    if (category !== 'all') {
+      const filtered = allGlobalProducts.filter(product =>
+        product.category
+          .toLowerCase().includes(category)
+      );
+      setAllProducts(filtered);
+    } else {
+      setAllProducts(allGlobalProducts);
+    }
+  }
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value.toLowerCase();
+    setParams(query, 'search')
+    setAllProducts(allGlobalProducts);
+    if (query) {
+      const filtered = allGlobalProducts.filter(product =>
+        product.title.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query)
+      );
+      setAllProducts(filtered);
+    } else {
+      setAllProducts(allGlobalProducts);
+    }
+  };
+
+  const setParams = (filterText: string, type: 'category' | 'search') => {
+    setSearchParams({
+      search: type === 'search' ? filterText : searchQuery ?? '',
+      category: type === 'category' ? filterText : categoryQuery ?? ''
+    })
+  }
+
+
+  const filter = () => {
+    // Apply search query from URL if present
+    let _allProducts = [...allProducts];
+    console.log(searchQuery, allGlobalProducts);
+    if (searchQuery !== '') {
+      _allProducts = allGlobalProducts.filter(product =>
+        product.title.toLowerCase().includes(searchQuery) ||
+        product.description.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    return _allProducts;
+  }
+
+
+  // const filterProduct = () => { 
+  //   let _allProducts = allProducts ? [...allProducts] : []; 
+  //   if (!categoryQuery) {
+  //     _allProducts = allProducts ? [...allProducts] : [];
+  //   } else {
+  //     if (categoryQuery !== "all") {
+  //       _allProducts = _allProducts.filter(
+  //         (each) => each.category === categoryQuery
+  //       );
+  //     } else { 
+  //       _allProducts = allProducts ? [...allProducts] : [];
+  //     }
+  //   }
+
+  //   if (searchQuery && searchQuery !== '') {
+  //     _allProducts = allProducts.filter((product) =>
+  //       product.title.toLowerCase().includes(searchQuery.toLowerCase())
+  //     );
+  //   }
+  //   return _allProducts;
+  // };
+
+
+  if (loading) {
+    return (
+      <>
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <CircularProgress />
+        </Box>
+      </>
+    );
   }
 
   return (
@@ -84,20 +188,46 @@ function App() {
             onClose={handleClose}
           >
 
-            {allCategorys.map(res => (
-               <MenuItem onClick={() => handleMenu(res)}>{res}</MenuItem>
+            {allCategorys.map((res, i) => (
+              <MenuItem key={i} onClick={() => handleMenu(res)}>{res}</MenuItem>
             ))}
 
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             My App
           </Typography>
+
+          {/* Search Bar */}
+          <TextField
+            variant="outlined"
+            placeholder="Search…"
+            size="small"
+            sx={{ mx: 2, backgroundColor: 'white', borderRadius: 1 }}
+            onChange={handleSearchChange}
+            value={searchQuery}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Home Link */}
+          <Button color="inherit">Home</Button>
+
+          {/* Logout Button */}
+          <IconButton color="inherit">
+            <Logout />
+          </IconButton>
         </Toolbar>
+
       </AppBar>
       <Container sx={{ mt: 4 }}>
         <Grid container spacing={2}>
 
-          <CardProduct item={allProducts} categoryItem={menuCate} />
+          <CardProduct item={filter()} categoryItem={menuCate} />
 
         </Grid>
       </Container>
