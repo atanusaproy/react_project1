@@ -73,7 +73,7 @@ function App() {
 
     setParams(category, 'category');
     setMenuCate(category);
-    console.log(category);
+    // console.log(category);
 
     if (category !== 'all') {
       const filtered = allGlobalProducts.filter(product =>
