@@ -15,6 +15,8 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { IProducts } from '../Interface/Product.interface';
 import { IconButton } from '@mui/material';
 import { Logout } from '@mui/icons-material';
+import PaymentIcon from '@mui/icons-material/Payment';
+import AppTopBar from './AppTopBar/appTopBar';
 
 const SingleProduct: React.FC = () => {
     const { product_id } = useParams();
@@ -32,13 +34,18 @@ const SingleProduct: React.FC = () => {
     }
 
     const handleAddToCart = () => {
-        // Logic for adding the product to the cart
+        // Logic of cart
         console.log('Product added to cart:', item);
     };
 
+    const handleBuyNow = () => {
+        // Buy Now code
+        console.log('Proceed to buy the item');
+      };
+
     return (
         <>
-            <AppBar position="static">
+            {/* <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Product Details
@@ -50,7 +57,9 @@ const SingleProduct: React.FC = () => {
                         </IconButton>
                     </Box>
                 </Toolbar>
-            </AppBar>
+            </AppBar> */}
+
+            <AppTopBar></AppTopBar>
 
             <Container sx={{ mt: 4 }}>
                 <Grid container spacing={2}>
@@ -95,14 +104,20 @@ const SingleProduct: React.FC = () => {
                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                                     Category: {item.category}
                                 </Typography>
-                                <Box sx={{ p: 2 }}>
+                                <Box sx={{ p: 2, display: 'flex', gap: 2 }}>
                                     <Button
                                         variant="contained"
                                         color="primary"
                                         startIcon={<ShoppingCartIcon />}
-                                        onClick={handleAddToCart}
-                                    >
+                                        onClick={handleAddToCart}>
                                         Add to Cart
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        startIcon={<PaymentIcon />} // Use a different icon for the "Buy Now" button
+                                        onClick={handleBuyNow}>
+                                        Buy Now
                                     </Button>
                                 </Box>
                                 <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 2 }}>

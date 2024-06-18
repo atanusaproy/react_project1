@@ -1,235 +1,120 @@
-// App.js
-
 import React, { useEffect, useState } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import CardProduct from './component/card/product';
-import ProductService from './Service/ProductService';
-import { IProductCategory, IProducts } from './Interface/Product.interface';
-import { CircularProgress, Box, Button, TextField, InputAdornment } from '@mui/material';
-import { Logout } from '@mui/icons-material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Navbar, Nav, NavDropdown, Container, Spinner, Button, Form, FormControl, Row } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
-
-
+import ProductService from './Service/ProductService';
+import CardProduct from './component/card/product';
+import { IProducts } from './Interface/Product.interface';
+import './App.css';
 
 function App() {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [allProducts, setAllProducts] = useState<IProducts[]>([]);
-  const [allGlobalProducts, setAllGlobalProducts] = useState<IProducts[]>([]);
-  const [allCategorys, setAllCategorys] = useState<string[]>([]);
-  const [menuCate, setMenuCate] = useState<string[]>([]);
+  const [products, setProducts] = useState<IProducts[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<IProducts[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categoryParams, setCategoryParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
-  const categoryQuery = searchParams.get('category') || '';
-
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const categoryQuery = searchParams.get('category') || 'all';
 
   useEffect(() => {
-    setLoading(true);
-    const getProducts = async () => {
-      let products = await new ProductService().getProductList();
-      // console.log('From app com', products);
-      setAllProducts(products);
-      setAllGlobalProducts(products);
+    const fetchData = async () => {
+      setLoading(true);
+      const products = await new ProductService().getProductList();
+      const categories = await new ProductService().getProductCat();
 
-    }
-    getProducts()
-
-    const getCategorys = async () => {
-      let categorys = await new ProductService().getProductCat();
-      // console.log('Product Category', categorys);
-      const updatedCategories = ["all", ...categorys];
-      setAllCategorys(updatedCategories);
+      setProducts(products);
+      setFilteredProducts(products);
+      setCategories(["all", ...categories]);
       setLoading(false);
-    }
-    getCategorys()
-
-
+    };
+    fetchData();
   }, []);
 
-  const handleMenu = (val: any) => {
-    const category = val.toLowerCase();
+  useEffect(() => {
+    const applyFilters = () => {
+      let filtered = [...products];
+      // Apply search filter
+      if (searchQuery) {
+        filtered = filtered.filter(product =>
+          product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
 
-    setParams(category, 'category');
-    setMenuCate(category);
-    // console.log(category);
+      // Apply category filter
+      if (categoryQuery && categoryQuery !== 'all') {
+        filtered = filtered.filter(product => product.category.toLowerCase() === categoryQuery.toLowerCase());
+      }
 
-    if (category !== 'all') {
-      const filtered = allGlobalProducts.filter(product =>
-        product.category
-          .toLowerCase().includes(category)
-      );
-      setAllProducts(filtered);
-    } else {
-      setAllProducts(allGlobalProducts);
-    }
-  }
+      setFilteredProducts(filtered);
+    };
+
+    applyFilters();
+  }, [products, searchQuery, categoryQuery]);
+
+  const handleCategoryChange = (category: string) => {
+    setSearchParams({ search: searchQuery, category: category.toLowerCase() });
+  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.toLowerCase();
-    setParams(query, 'search')
-    setAllProducts(allGlobalProducts);
-    if (query) {
-      const filtered = allGlobalProducts.filter(product =>
-        product.title.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query)
-      );
-      setAllProducts(filtered);
-    } else {
-      setAllProducts(allGlobalProducts);
-    }
+    setSearchParams({ search: query, category: categoryQuery });
   };
-
-  const setParams = (filterText: string, type: 'category' | 'search') => {
-    setSearchParams({
-      search: type === 'search' ? filterText : searchQuery ?? '',
-      category: type === 'category' ? filterText : categoryQuery ?? ''
-    })
-  }
-
-
-  const filter = () => {
-    // Apply search query from URL if present
-    let _allProducts = [...allProducts];
-    console.log(searchQuery, allGlobalProducts);
-    if (searchQuery !== '') {
-      _allProducts = allGlobalProducts.filter(product =>
-        product.title.toLowerCase().includes(searchQuery) ||
-        product.description.toLowerCase().includes(searchQuery)
-      );
-    }
-
-    return _allProducts;
-  }
-
-
-  // const filterProduct = () => { 
-  //   let _allProducts = allProducts ? [...allProducts] : []; 
-  //   if (!categoryQuery) {
-  //     _allProducts = allProducts ? [...allProducts] : [];
-  //   } else {
-  //     if (categoryQuery !== "all") {
-  //       _allProducts = _allProducts.filter(
-  //         (each) => each.category === categoryQuery
-  //       );
-  //     } else { 
-  //       _allProducts = allProducts ? [...allProducts] : [];
-  //     }
-  //   }
-
-  //   if (searchQuery && searchQuery !== '') {
-  //     _allProducts = allProducts.filter((product) =>
-  //       product.title.toLowerCase().includes(searchQuery.toLowerCase())
-  //     );
-  //   }
-  //   return _allProducts;
-  // };
-
 
   if (loading) {
     return (
-      <>
-        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-          <CircularProgress />
-        </Box>
-      </>
+      <Container className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <Spinner animation="border" />
+      </Container>
     );
   }
 
   return (
     <div>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={handleClick}
-          >
-            <MenuIcon />
-          </IconButton>
+      <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
+        <Container>
+          <Navbar.Brand href="#home" className="d-flex align-items-center">
+            <img
+              src={`${process.env.PUBLIC_URL}/a.png`} // Replace with your logo URL
+              width="40"
+              height="40"
+              className="d-inline-block align-top"
+              alt="OpenCart Logo"
+            />
+            <span className="ms-2">Royz</span> {/* Add margin start for spacing */}
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <NavDropdown title="Categories" id="basic-nav-dropdown">
+                {categories.map((category, index) => (
+                  <NavDropdown.Item key={index} onClick={() => handleCategoryChange(category)}>
+                    {category}
+                  </NavDropdown.Item>
+                ))}
+              </NavDropdown>
+              <Nav.Link href="#home">Home</Nav.Link>
+            </Nav>
+            <Form className="d-flex">
+              <FormControl
+                type="search"
+                placeholder="Search"
+                className="me-2"
+                aria-label="Search"
+                onChange={handleSearchChange}
+                value={searchQuery}
+              />
+              <Button variant="outline-success">Search</Button>
+            </Form>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
 
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-
-            {allCategorys.map((res, i) => (
-              <MenuItem key={i} onClick={() => handleMenu(res)}>{res}</MenuItem>
-            ))}
-
-          </Menu>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            My App
-          </Typography>
-
-          {/* Search Bar */}
-          <TextField
-            variant="outlined"
-            placeholder="Search…"
-            size="small"
-            sx={{ mx: 2, backgroundColor: 'white', borderRadius: 1 }}
-            onChange={handleSearchChange}
-            value={searchQuery}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Home Link */}
-          <Button color="inherit">Home</Button>
-
-          {/* Logout Button */}
-          <IconButton color="inherit">
-            <Logout />
-          </IconButton>
-        </Toolbar>
-
-      </AppBar>
-      <Container sx={{ mt: 4 }}>
-        <Grid container spacing={2}>
-
-          <CardProduct item={filter()} categoryItem={menuCate} />
-
-        </Grid>
+      {/* Add top padding to avoid overlap with the fixed navbar */}
+      <Container style={{ marginTop: '70px' }}>
+        <Row>
+          <CardProduct item={filteredProducts} categoryItem={categoryQuery} />
+        </Row>
       </Container>
     </div>
   );
