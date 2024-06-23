@@ -1,0 +1,10 @@
+/* File: ../components/AppFooter.css */
+
+.app-footer {
+    position: relative;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    margin-top: auto; /* Ensures footer stays at the bottom of the content */
+    padding: 10px 0;
+}

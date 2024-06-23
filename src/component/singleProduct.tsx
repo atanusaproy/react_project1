@@ -16,7 +16,7 @@ import { IProducts } from '../Interface/Product.interface';
 import { IconButton } from '@mui/material';
 import { Logout } from '@mui/icons-material';
 import PaymentIcon from '@mui/icons-material/Payment';
-import AppTopBar from './AppTopBar/appTopBar';
+import AppTopBar from '../layout/includes/appTopBar';
 
 const SingleProduct: React.FC = () => {
     const { product_id } = useParams();
@@ -41,25 +41,10 @@ const SingleProduct: React.FC = () => {
     const handleBuyNow = () => {
         // Buy Now code
         console.log('Proceed to buy the item');
-      };
+    };
 
     return (
         <>
-            {/* <AppBar position="static">
-                <Toolbar>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Product Details
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Button color="inherit" component={Link} to="/">Home</Button>
-                        <IconButton color="inherit">
-                            <Logout />
-                        </IconButton>
-                    </Box>
-                </Toolbar>
-            </AppBar> */}
-
-            <AppTopBar></AppTopBar>
 
             <Container sx={{ mt: 4 }}>
                 <Grid container spacing={2}>
