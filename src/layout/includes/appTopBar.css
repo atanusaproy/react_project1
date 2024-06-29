@@ -1,0 +1,8 @@
+.nav-icon {
+    color: white; /* Default color */
+    transition: color 0.3s ease; /* Smooth transition */
+  }
+  
+  .nav-icon:hover {
+    color: rgb(36, 214, 116); /* Color on hover */
+  }
