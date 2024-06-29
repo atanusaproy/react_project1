@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Navbar, Nav, Container, Offcanvas, Button, Form, FormControl, NavDropdown } from 'react-bootstrap';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Navbar, Nav, Container, Offcanvas, Button, Form, FormControl, NavDropdown, Spinner } from 'react-bootstrap';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { IProducts } from '../../Interface/Product.interface';
 import ProductService from '../../Service/ProductService';
 
@@ -27,6 +27,10 @@ const pages = [
 
 const AppTopBar: React.FC<IProps> = () => {
 
+  const location = useLocation();
+  const pathname = location.pathname;
+  const [showForm, setShowForm] = useState(true);
+
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
 
@@ -42,7 +46,14 @@ const AppTopBar: React.FC<IProps> = () => {
       }
     };
     fetchData();
-  }, [])
+
+    if (pathname !== '/' || '') {
+      setShowForm(false);
+    }else{
+      setShowForm(true);
+    }
+
+  }, [showForm, categories])
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
@@ -60,8 +71,8 @@ const AppTopBar: React.FC<IProps> = () => {
     setSearchParams({ search: query, category: categoryQuery });
   };
 
-  return (
-    <>
+  return (  
+    <> 
       <Navbar bg="dark" variant="dark" expand="lg" fixed="top">
         <Container>
           <Link to={'/'}>
@@ -72,20 +83,28 @@ const AppTopBar: React.FC<IProps> = () => {
               className="d-inline-block align-top"
               alt="OpenCart Logo"
             />
-      
+
           </Link>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <NavDropdown title="Categories" id="basic-nav-dropdown">
+              <NavDropdown title={categoryQuery === 'all' ? "Categories" : categoryQuery} id="basic-nav-dropdown">
                 {categories && categories.map((category, index) => (
                   <NavDropdown.Item key={index} onClick={() => handleCategoryChange(category)}>
                     {category}
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
-              <Nav.Link href="#home">Home</Nav.Link>
+
+              {
+                pages && pages.map((res, i) => (
+                  <Nav.Link href={res.link} key={i}>
+                    {res.menuName}
+                  </Nav.Link>
+                ))
+              }
             </Nav>
+            {showForm && (
             <Form className="d-flex">
               <FormControl
                 type="search"
@@ -97,6 +116,7 @@ const AppTopBar: React.FC<IProps> = () => {
               />
               <Button variant="outline-success">Search</Button>
             </Form>
+            )}
           </Navbar.Collapse>
         </Container>
       </Navbar>
