@@ -12,11 +12,13 @@ import Button from '@mui/material/Button';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaymentIcon from '@mui/icons-material/Payment';
 import { IProducts } from '../../Interface/Product.interface';
+import useProductCartStore from '../../store/cart.store';
 
 const SingleProduct: React.FC = () => {
     const { product_id } = useParams();
     const location = useLocation();
     const item = location.state?.res as IProducts;
+    const {addToCart} = useProductCartStore();
 
     if (!item) {
         return (
@@ -28,8 +30,13 @@ const SingleProduct: React.FC = () => {
         );
     }
 
-    const handleAddToCart = () => {
-        console.log('Product added to cart:', item);
+    const handleAddToCart = (item: IProducts) => {
+        // console.log('Product added to cart:', item);
+        // cartItem.increaseCartItem();
+        // cartItem.increaseCartTest(item);
+        // console.log(cartItem.x);
+        addToCart(item);
+        
     };
 
     const handleBuyNow = () => {
@@ -37,8 +44,8 @@ const SingleProduct: React.FC = () => {
     };
 
     return (
-        <Container sx={{ mt: 4, boxShadow: 6, minHeight: { xs: '50px', md: '600px' } }}>
-            <Grid container spacing={2} sx={{ marginTop: { xs: '50px', md: '100px' } }}>
+        <Container sx={{ mt: 15, boxShadow: 6}}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                     <Card sx={{ height: '95%', display: 'flex', flexDirection: 'column' }}>
                         <CardMedia
@@ -98,7 +105,7 @@ const SingleProduct: React.FC = () => {
                                         variant="contained"
                                         color="primary"
                                         startIcon={<ShoppingCartIcon />}
-                                        onClick={handleAddToCart}
+                                        onClick={() => handleAddToCart(item)}
                                     >
                                         Add to Cart
                                     </Button>

@@ -7,6 +7,7 @@ import App from "../App";
 import SingleProduct from "../component/ProductDetails/singleProduct";
 import AppLayout from "../layout/main.layout";
 import NewPage from "../component/NewPage";
+import CartDetails from "../component/cartDetails/cartDetails";
 
 const ConditionalRedirect = () => {
     const location = useLocation();
@@ -40,6 +41,10 @@ const router = createBrowserRouter([
             {
                 path: "new-page",
                 element: <NewPage />
+            },
+            {
+                path: "cart",
+                element: <CartDetails />
             }
         ]
     },

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import AppTopBar from "./includes/appTopBar";
+import AppTopBar from "./includes/topbar/appTopBar";
 import AppFooter from "./includes/appFooter";
 
 const AppLayout = () => {

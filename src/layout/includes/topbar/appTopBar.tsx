@@ -3,8 +3,13 @@ import { Navbar, Nav, Container, Button, Form, FormControl, NavDropdown } from '
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
-import ProductService from '../../Service/ProductService';
+import ProductService from '../../../Service/ProductService';
 import './appTopBar.css';
+import TopBarCart from './topbar.cart';
+import { IProducts } from '../../../Interface/Product.interface';
+import Autocomplete from '@mui/material/Autocomplete';
+import { parseJsonText } from 'typescript';
+import SearchAutoComplete from './searchAutoComplete';
 
 interface IProps {
   categoriesMenu?: string[] | [];
@@ -21,8 +26,8 @@ const pages = [
     link: '/pricing',
   },
   {
-    menuName: 'Blog',
-    link: '/blog',
+    menuName: 'New Page',
+    link: '/new-page',
   },
 ];
 
@@ -31,6 +36,7 @@ const AppTopBar: React.FC<IProps> = () => {
   const pathname = location.pathname;
   const [showForm, setShowForm] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
+  const [productList, setProductList] = useState<IProducts[]>([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
   const categoryQuery = searchParams.get('category') || 'all';
@@ -47,14 +53,25 @@ const AppTopBar: React.FC<IProps> = () => {
     };
     fetchData();
 
-    // if (pathname !== '/' && pathname !== '') {
-    //   setShowForm(false);
-    // } else {
-    //   setShowForm(true);
-    // }
+    if (pathname !== '/' && pathname !== '') {
+      setShowForm(false);
+    } else {
+      setShowForm(true);
+    }
+    const fetchProductList = async () => {
+      try {
+        const productList = await new ProductService().getProductList();
+        console.log(productList);
+        setProductList([...productList]);
+      } catch (error) {
+        console.error('Error fetching product data:', error);
+      }
+    };
+    fetchProductList();
+
   }, [pathname]); // Remove unnecessary dependencies and ensure pathname is correctly checked
 
-  const navigateToHome = ((category: string, searchQuery: string) => {
+  const navigateToHome = ((searchQuery: string, category: string) => {
     if (pathname !== '/' && pathname !== '') {
       navigate({
         pathname: '/',
@@ -65,13 +82,13 @@ const AppTopBar: React.FC<IProps> = () => {
 
   const handleCategoryChange = (category: string) => {
     setSearchParams({ search: searchQuery, category: category.toLowerCase() });
-    navigateToHome(category, searchQuery);
+    navigateToHome(searchQuery, category);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.toLowerCase();
     setSearchParams({ search: query, category: categoryQuery });
-    navigateToHome(categoryQuery, query);
+    navigateToHome(query, categoryQuery);
   };
 
   return (
@@ -104,7 +121,7 @@ const AppTopBar: React.FC<IProps> = () => {
                 </Nav.Link>
               ))}
             </Nav>
-            {showForm && (
+            {showForm ? (
               <Form className="d-flex">
                 <FormControl
                   type="search"
@@ -116,16 +133,22 @@ const AppTopBar: React.FC<IProps> = () => {
                 />
                 <Button variant="outline-success">Search</Button>
               </Form>
-            )}
+            )
+              :
+              (
+                <SearchAutoComplete />
+              )
+            }
             <Nav className="ms-auto">
-              <Nav.Link as={Link} to="#">
-                <ShoppingCart className="nav-icon" fontSize="large" />
-              </Nav.Link>
-              <Nav.Link as={Link} to="#">
-                <AccountCircle className="nav-icon" fontSize="large" />
-              </Nav.Link>
+              {/* Cart Item */}
+
             </Nav>
           </Navbar.Collapse>
+          <TopBarCart />
+          <div style={{ marginRight: 30 }} />
+          <Nav.Link as={Link} to="#">
+            <AccountCircle className="nav-icon" fontSize="large" />
+          </Nav.Link>
         </Container>
       </Navbar>
     </>
