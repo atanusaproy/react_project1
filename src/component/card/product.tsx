@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { IProducts } from '../../Interface/Product.interface';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import useProductCartStore from '../../store/cart.store';
+import CartAction from '../cartDetails/cartItemManageAction';
 
 interface IProd {
     item: IProducts[];
@@ -11,15 +12,18 @@ interface IProd {
 }
 
 const CardProduct: FC<IProd> = ({ item, categoryItem }) => {
+    const { cartItems, addToCart } = useProductCartStore();
     const navigate = useNavigate();
-    const {addToCart} = useProductCartStore();
+
+    const isCurrentItemInCart = (productId: number) => {
+        return cartItems.find(eachCartItem => eachCartItem.item_id === productId);
+    }
 
     function handleClick(res: any): void {
         navigate(`/details/${res.id}`, { state: { res } });
     }
 
     function handleAddToCart(res: IProducts): void {
-       // console.log('Added to cart:', res);
         addToCart(res);
     }
 
@@ -57,15 +61,19 @@ const CardProduct: FC<IProd> = ({ item, categoryItem }) => {
                                     {res.rating.rate} ({res.rating.count} reviews)
                                 </div>
                             </div>
-                            <Button
-                                variant="primary"
-                                onClick={() => handleAddToCart(res)}
-                                className="d-flex align-items-center justify-content-center"
-                                style={{ flexDirection: 'row' }}
-                            >
-                                <ShoppingCartIcon style={{ marginRight: '5px' }} />
-                                Add to Cart
-                            </Button>
+                            {isCurrentItemInCart(res.id) ? (
+                                <CartAction product_id={res.id} />
+                            ) : (
+                                <Button
+                                    variant="primary"
+                                    onClick={() => handleAddToCart(res)}
+                                    className="d-flex align-items-center justify-content-center"
+                                    style={{ flexDirection: 'row' }}
+                                >
+                                    <ShoppingCartIcon style={{ marginRight: '5px' }} />
+                                    Add to Cart
+                                </Button>
+                            )}
                         </Card.Body>
                     </Card>
                 </Col>

@@ -13,12 +13,23 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaymentIcon from '@mui/icons-material/Payment';
 import { IProducts } from '../../Interface/Product.interface';
 import useProductCartStore from '../../store/cart.store';
+import CartAction from '../cartDetails/cartItemManageAction';
+
+interface IProd {
+    item: IProducts[];
+    categoryItem: string[] | string;
+}
 
 const SingleProduct: React.FC = () => {
     const { product_id } = useParams();
     const location = useLocation();
     const item = location.state?.res as IProducts;
-    const {addToCart} = useProductCartStore();
+    const { addToCart } = useProductCartStore();
+    const { cartItems } = useProductCartStore();
+
+    const isCurrentItemInCart = (productId: number) => {
+        return cartItems.find(eachCartItem => eachCartItem.item_id === productId);
+    }
 
     if (!item) {
         return (
@@ -36,7 +47,7 @@ const SingleProduct: React.FC = () => {
         // cartItem.increaseCartTest(item);
         // console.log(cartItem.x);
         addToCart(item);
-        
+
     };
 
     const handleBuyNow = () => {
@@ -44,7 +55,7 @@ const SingleProduct: React.FC = () => {
     };
 
     return (
-        <Container sx={{ mt: 15, boxShadow: 6}}>
+        <Container sx={{ mt: 15, boxShadow: 6 }}>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                     <Card sx={{ height: '95%', display: 'flex', flexDirection: 'column' }}>
@@ -100,15 +111,19 @@ const SingleProduct: React.FC = () => {
                             {/* Action Buttons */}
                             <Grid container spacing={2} sx={{ mt: 2 }}>
                                 <Grid item xs={12} sm={6}>
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        color="primary"
-                                        startIcon={<ShoppingCartIcon />}
-                                        onClick={() => handleAddToCart(item)}
-                                    >
-                                        Add to Cart
-                                    </Button>
+                                    {isCurrentItemInCart(item.id) ? (
+                                        <CartAction product_id={item.id} />
+                                    ) : (
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            color="primary"
+                                            startIcon={<ShoppingCartIcon />}
+                                            onClick={() => handleAddToCart(item)}
+                                        >
+                                            Add to Cart
+                                        </Button>
+                                    )}
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <Button
